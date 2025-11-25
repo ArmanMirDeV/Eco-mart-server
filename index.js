@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 app.use(cors());
@@ -27,6 +27,43 @@ async function run() {
 
     const db = client.db("ecoMart");
     const productsCollection = db.collection("products");
+
+    //        GET ALL PRODUCTS
+    // ----------------------------
+    app.get("/products", async (req, res) => {
+      try {
+        const products = await productsCollection.find().toArray();
+
+        res.send({
+          success: true,
+          count: products.length,
+          products,
+        });
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).send({
+          success: false,
+          message: "Server Error",
+        });
+      }
+    });
+
+    // Get single product by ID
+    app.get("/products/:id", async (req, res) => {
+      const { id } = req.params;
+      try {
+        const product = await productsCollection.findOne({
+          _id: new ObjectId(id),
+        });
+        if (!product)
+          return res.status(404).json({ message: "Product not found" });
+
+        res.json({ product });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
 
     //        POST API
     // ----------------------------
