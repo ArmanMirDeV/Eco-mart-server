@@ -8,8 +8,6 @@ app.use(cors());
 app.use(express.json());
 const port = process.env.port || 5000;
 
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@kajwala.9fiaw1u.mongodb.net/?appName=kajwala`;
 
 const client = new MongoClient(uri, {
@@ -45,6 +43,46 @@ async function run() {
           success: false,
           message: "Server Error",
         });
+      }
+    });
+
+    // UPDATE PRODUCT
+    app.put("/products/:id", async (req, res) => {
+      const { id } = req.params;
+      const {
+        title,
+        shortDescription,
+        fullDescription,
+        price,
+        imageUrl,
+        category,
+      } = req.body;
+
+      try {
+        const result = await productsCollection.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $set: {
+              title,
+              shortDescription,
+              fullDescription,
+              price,
+              imageUrl,
+              category,
+            },
+          }
+        );
+
+        if (result.matchedCount === 0) {
+          return res
+            .status(404)
+            .json({ success: false, message: "Product not found" });
+        }
+
+        res.json({ success: true, message: "Product updated successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server Error" });
       }
     });
 
