@@ -48,6 +48,25 @@ async function run() {
       }
     });
 
+    // Delete product by ID
+    app.delete("/products/:id", async (req, res) => {
+      const { id } = req.params;
+      try {
+        const result = await productsCollection.deleteOne({
+          _id: new ObjectId(id),
+        });
+        if (result.deletedCount === 0)
+          return res
+            .status(404)
+            .json({ success: false, message: "Product not found" });
+
+        res.json({ success: true, message: "Product deleted successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
+      }
+    });
+
     // Get single product by ID
     app.get("/products/:id", async (req, res) => {
       const { id } = req.params;
