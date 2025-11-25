@@ -25,6 +25,31 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    const db = client.db("ecoMart");
+    const productsCollection = db.collection("products");
+
+    //        POST API
+    // ----------------------------
+    app.post("/products", async (req, res) => {
+      try {
+        const product = req.body;
+
+        // Add auto timestamp if missing
+        product.addTime = product.addTime || new Date();
+
+        const result = await productsCollection.insertOne(product);
+
+        res.status(201).send({
+          success: true,
+          message: "Product added successfully",
+          insertedId: result.insertedId,
+        });
+      } catch (error) {
+        console.error("Error inserting product:", error);
+        res.status(500).send({ success: false, message: "Server Error" });
+      }
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
